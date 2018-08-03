@@ -79,8 +79,8 @@ class TestWeakrandomMethods(unittest.TestCase):
 
         self.assertEqual(test_object.save_split(pass_str), False)
         files_p = [str(x.name) for x in p.iterdir()]
-        self.assertTrue("train_inputs_test_prng.csv" in files_p)
-        self.assertTrue("train_inputs_test_prng.csv" in files_p)
+        self.assertTrue("train_inputs_test_prng.bin" in files_p)
+        self.assertTrue("train_inputs_test_prng.bin" in files_p)
 
     def test_get_round_size(self):
         p = Path("./test_dir")

@@ -32,7 +32,7 @@ class Weakrandom(object):
         @param num_of_mbytes number of Mb generated (Min. 40)
         @param data directory that contains the results
         """
-        if(num_of_mbytes < 40):
+        if(num_of_mbytes < 20):
             raise ValueError("num_of_mbytes must be greater then 40")
 
         self.data_dir = data
@@ -48,7 +48,7 @@ class Weakrandom(object):
         self._eval_lines = self.eval_number_of_lines
         self._num_of_bytes = 0
         self._src_bytes = 0
-        self._rounds, self._round_size, self._num_of_bytes, self._src_bytes, self._targ_bytes = self._adjust_num_elements((num_of_mbytes * 1000000 * 2) // 3)
+        self._rounds, self._round_size, self._num_of_bytes, self._src_bytes, self._targ_bytes = self._adjust_num_elements((num_of_mbytes * 1000000 * 3.7) // 3)
         self._prng_name = prng_name
         self._train_target_mean: List[int] = []
         self._eval_target_mean: List[int] = []
@@ -57,8 +57,8 @@ class Weakrandom(object):
         self._handles: Dict[str,BinaryIO] = dict()
         self._saved_init = [num_of_mbytes, data]
 
-        INPUT_FILENAME_PATTERN = '%s_inputs_%s.csv'
-        TARGET_FILENAME_PATTERN = '%s_targets_%s.csv'
+        INPUT_FILENAME_PATTERN = '%s_inputs_%s.bin'
+        TARGET_FILENAME_PATTERN = '%s_targets_%s.bin'
 
         # train
         self.train_inputs_path = os.path.join(
@@ -181,7 +181,7 @@ class Weakrandom(object):
                     for j in range(0, self._targ_bytes, self.word_size)
                 ])
 
-            ret = self._write_csv(source_list, target_list)
+            ret = self._write_bin(source_list, target_list)
 
             data = data[self._round_size:]
 
@@ -198,13 +198,13 @@ class Weakrandom(object):
                              i + self._src_bytes + j + self.word_size])
                     for j in range(0, self._targ_bytes, self.word_size)
                 ])
-            ret = self._write_csv(source_list, target_list)
+            ret = self._write_bin(source_list, target_list)
         return ret
 
-    def _write_csv(self, source_list: List[List[int]], target_list: List[List[int]]) -> bool:
+    def _write_bin(self, source_list: List[List[int]], target_list: List[List[int]]) -> bool:
 
-        INPUT_FILENAME_PATTERN = '%s_inputs_%s.csv'
-        TARGET_FILENAME_PATTERN = '%s_targets_%s.csv'
+        INPUT_FILENAME_PATTERN = '%s_inputs_%s.bin'
+        TARGET_FILENAME_PATTERN = '%s_targets_%s.bin'
         source_list = np.array(source_list)
         target_list = np.array(target_list)
 
@@ -216,21 +216,11 @@ class Weakrandom(object):
         if self.train_number_of_lines > 0 and len(target_list) > 0:
             # input
             with open(self.train_inputs_path,"ab+") as inputs_handle:
-                np.savetxt(
-                    inputs_handle,
-                    source_list[:self.train_number_of_lines],
-                    delimiter=",",
-                    fmt='%1u')
+                    source_list[:self.train_number_of_lines].astype('bool').tofile(inputs_handle)
             source_list = source_list[self.train_number_of_lines:]
             # target
             with open(self.train_targets_path,"ab+") as target_handle:
-                np.savetxt(
-                    target_handle,
-                    target_list[:self.train_number_of_lines],
-                    delimiter=",",
-                    fmt='%1u')
-
-            # calculate metadata
+                    target_list[:self.train_number_of_lines].astype('bool').tofile(target_handle)            # calculate metadata
             tmp_dict = dict(
                 zip(*np.unique(
                     target_list[:self.train_number_of_lines],
@@ -255,20 +245,12 @@ class Weakrandom(object):
         if self.eval_number_of_lines > 0 and len(target_list) > 0:
             # input
             with open(self.eval_inputs_path,"ab+") as input_handle:
-                np.savetxt(
-                    input_handle,
-                    source_list[:self.eval_number_of_lines],
-                    delimiter=",",
-                    fmt='%1u')
+                    source_list[:self.eval_number_of_lines].astype('bool').tofile(input_handle)
             source_list = source_list[self.eval_number_of_lines:]
             # target
             with open(self.eval_targets_path,"ab+") as target_handle:
-                np.savetxt(
-                    target_handle,
                     target_list[:self.train_number_of_lines +
-                                self.eval_number_of_lines],
-                    delimiter=",",
-                    fmt='%1u')
+                                self.eval_number_of_lines].astype('bool').tofile(target_handle)
             # calculate metadata
             tmp_dict = dict(
                 zip(*np.unique(
@@ -295,19 +277,11 @@ class Weakrandom(object):
         if self.test_number_of_lines > 0 and len(target_list) > 0:
             # input
             with open(self.test_inputs_path,"ab+") as input_handle:
-                np.savetxt(
-                    input_handle,
-                    source_list[:self.test_number_of_lines],
-                    delimiter=",",
-                    fmt='%1u')
-                source_list = source_list[self.test_number_of_lines:]
+                    source_list[:self.test_number_of_lines].astype('bool').tofile(input_handle)
+            source_list = source_list[self.test_number_of_lines:]
             # target
             with open(self.test_targets_path,"ab+") as target_handle:
-                np.savetxt(
-                    target_handle,
-                    target_list[:self.test_number_of_lines],
-                    delimiter=",",
-                    fmt='%1u')
+                    target_list[:self.test_number_of_lines].astype('bool').tofile(target_handle)
             length = len(target_list[:self.test_number_of_lines])
             target_list = target_list[self.test_number_of_lines:]
             self.test_number_of_lines -= length

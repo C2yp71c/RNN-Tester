@@ -61,7 +61,7 @@ def get_meta(path: Path, function: str) -> Tuple[float, float, int, int]:
             meta_path)
     else:
         raise ValueError(
-            "No metadata for the prng " + str(function) + " in " + str(meta_path))
+            "No metadata for the PRNG " + str(function) + " in " + str(meta_path))
 
     return train_guess_error, eval_guess_error, np.int64(
         input_coloumns), np.int64(target_coloumns)
@@ -134,7 +134,7 @@ def prediction(options, eval_rounds: int,
             [
                 str(options.path_string) +
                 "/train_targets_" +
-                str(options.FUNCTION) + ".csv"
+                str(options.FUNCTION) + ".bin"
             ],
             capacity=options.BATCH_SIZE * 100,
             shuffle=False)
@@ -142,7 +142,7 @@ def prediction(options, eval_rounds: int,
             [
                 str(options.path_string) +
                 "/train_inputs_" +
-                str(options.FUNCTION) + ".csv"
+                str(options.FUNCTION) + ".bin"
             ],
             capacity=options.BATCH_SIZE * 100,
             shuffle=False)
@@ -152,7 +152,7 @@ def prediction(options, eval_rounds: int,
             [
                 str(options.path_string) +
                 "/eval_targets_" +
-                str(options.FUNCTION) + ".csv"
+                str(options.FUNCTION) + ".bin"
             ],
             capacity=options.BATCH_SIZE * 100,
             shuffle=False)
@@ -160,7 +160,7 @@ def prediction(options, eval_rounds: int,
             [
                 str(options.path_string) +
                 "/eval_inputs_" +
-                str(options.FUNCTION) + ".csv"
+                str(options.FUNCTION) + ".bin"
             ],
             capacity=options.BATCH_SIZE * 100,
             shuffle=False)
@@ -170,7 +170,7 @@ def prediction(options, eval_rounds: int,
             [
                 str(options.path_string) +
                 "/test_targets_" +
-                str(options.FUNCTION) + ".csv"
+                str(options.FUNCTION) + ".bin"
             ],
             capacity=options.BATCH_SIZE * 100,
             shuffle=False)
@@ -178,7 +178,7 @@ def prediction(options, eval_rounds: int,
             [
                 str(options.path_string) +
                 "/test_inputs_" +
-                str(options.FUNCTION) + ".csv"
+                str(options.FUNCTION) + ".bin"
             ],
             capacity=options.BATCH_SIZE * 100,
             shuffle=False)
@@ -195,21 +195,23 @@ def prediction(options, eval_rounds: int,
             [train_target_queue, eval_target_queue, test_target_queue])
 
         # Read from queue
-        reader1 = tf.TextLineReader()
-        reader2 = tf.TextLineReader()
-        _, x_csv = reader1.read_up_to(x_queue, options.BATCH_SIZE)
-        _, y_csv = reader2.read_up_to(y_queue, options.BATCH_SIZE)
+        reader1 = tf.FixedLengthRecordReader(record_bytes=input_lines*options.BATCH_SIZE)
+        reader2 = tf.FixedLengthRecordReader(record_bytes=target_lines*options.BATCH_SIZE)
+        _, x_bin = reader1.read(x_queue)
+        _, y_bin = reader2.read(y_queue)
 
-        # Decode queue to CSV
-        record_defaults_inputs: List[List[int]] = [[]] * input_lines
-        record_defaults_targets: List[List[int]] = [[]] * target_lines
-        x_list = tf.decode_csv(x_csv, record_defaults=record_defaults_inputs)
-        y_list = tf.decode_csv(y_csv, record_defaults=record_defaults_targets)
 
-        # Concatenate CSV elements to tensor
-        x = tf.reshape(
-            tf.cast(x_list, tf.float32), [input_lines, options.BATCH_SIZE, 1])
-        y_ = tf.cast(y_list, tf.float32)
+        # Decode queue to list
+        x_list = tf.decode_raw(x_bin, tf.uint8)
+        y_list = tf.decode_raw(y_bin, tf.uint8)
+
+        x_list = tf.slice(x_list,[0],[input_lines*options.BATCH_SIZE])
+        y_list = tf.slice(y_list,[0],[target_lines*options.BATCH_SIZE])
+
+        # Concatenate list elements to tensor
+        x = tf.transpose(tf.reshape(
+            tf.cast(x_list, tf.float32), [1, options.BATCH_SIZE, input_lines]))
+        y_ = tf.transpose(tf.reshape(tf.cast(y_list, tf.float32),[options.BATCH_SIZE, target_lines]))
 
     # Modell
     with tf.name_scope('model'):
@@ -453,7 +455,7 @@ def eval_args() -> Optional[argparse.Namespace]:
         action="store",
         dest="path_string",
         nargs='?',
-        help="Path to the folder that contains the random numbers stored as CSV")
+        help="Path to the folder that contains the random numbers stored as binary")
     parser.add_argument(
         "-x",
         "--factor",
