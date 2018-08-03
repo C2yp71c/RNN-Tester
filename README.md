@@ -4,7 +4,7 @@ RNN Tester
 The `python3` program `rnn_tester.py` evaluates cryptographically
 secure pseudo random generators (CSPRNGs). The program uses a stream of
 numbers from the CSRPNGs formatted
-by [`weakrandom.py`](src/weakrandom/weakrandom.py). The program
+by [`weakrandom.py`](src/weakrandom/weakrandom.py).
 
 ## Build
 

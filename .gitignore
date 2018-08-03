@@ -13,3 +13,6 @@ src/weakrandom/crand
 
 # unittest
 src/weakrandom/test_dir
+
+# tensorflow
+src/linear_log

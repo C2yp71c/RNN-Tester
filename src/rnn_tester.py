@@ -275,12 +275,6 @@ def prediction(options, eval_rounds: int,
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        # Session Path
-        sess_path = Path(
-            './linear_log/' + str(datetime.datetime.now()).replace(' ', '-') +
-            "-" + options.FUNCTION + "-" + options.CELLTYPE + '/')
-        sess_path.parent.mkdir(parents=True, exist_ok=True)
-
         # Open log file
         writer = tf.summary.FileWriter(str(sess_path), sess.graph)
 
@@ -359,6 +353,7 @@ def prediction(options, eval_rounds: int,
                 listlearn, listright, listinput = sess.run([y, y_, x], {
                     select_q: 2
                 })
+
                 for _, i, l, r in zip(
                         range(verbose_rounds, 2),
                         listinput.transpose()[0], listlearn,
@@ -529,7 +524,7 @@ def eval_args() -> Optional[argparse.Namespace]:
     options.path_string = Path(options.path_string)
     if not options.path_string.is_dir():
         print_error(
-            "The path -d " + str(options.path_string) + "is not directory")
+            "The path -d " + str(options.path_string) + " is not directory")
         return None
 
     if options.FUNCTION is None:
@@ -556,7 +551,7 @@ def main():
     if not args is None:
         save_dir = Path('./linear_log/' + str(datetime.datetime.now()).replace(
             ' ', '-') + "-" + str(args.FUNCTION) + "-" + str(args.CELLTYPE) + '/')
-        save_dir.mkdir()
+        save_dir.mkdir(parents=True, exist_ok=True)
         eval_rounds = 10 if (args.EPOCH // 100) < 10 else (args.EPOCH // 100)
         accu, var = prediction(args, eval_rounds, save_dir)
         res = resultst(var, accu, eval_rounds, args.Verbose)
