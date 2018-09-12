@@ -1,6 +1,8 @@
 RNN Tester
 ==========
-
+This is the implementation of the content of the paper
+[Testing Cryptographically Secure Pseudo Random Number Generators with
+Artificial Neural Networks](10.1109/TrustCom/BigDataSE.2018.00168).
 The `python3` program `rnn_tester.py` evaluates cryptographically
 secure pseudo random generators (CSPRNGs). The program uses a stream of
 numbers from the CSRPNGs formatted
