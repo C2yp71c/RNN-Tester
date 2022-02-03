@@ -1,0 +1,11 @@
+0.1.0 -> 0.2.0
+	* Replace Tensorflow 1.x with 2.x
+
+	* Depricating the weakrandom generator for generating test data.
+	  Instead a single binary file with random numbers is used.
+
+	* Replace statistical analysis with dieharder tests.
+
+	* Add setup.cfg and pyproject.toml to build pip packages.
+
+	* Add tox for automatic testing.
