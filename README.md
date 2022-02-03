@@ -1,30 +1,53 @@
 RNN Tester
 ==========
-This is the implementation of the content of the paper
+This is the implementation base on the content of the paper\
 [Testing Cryptographically Secure Pseudo Random Number Generators with
-Artificial Neural Networks](<https://ieeexplore.ieee.org/document/8456037>).
-The `python3` program `rnn_tester.py` evaluates cryptographically
-secure pseudo random generators (CSPRNGs). The program uses a stream of
-numbers from the CSRPNGs formatted
-by [`weakrandom.py`](src/weakrandom/weakrandom.py).
+Artificial Neural Networks](<https://ieeexplore.ieee.org/document/8456037>).\
+The `python3` program `rnn_tester` evaluates (cryptographically
+secure) pseudo random generators with AI.
 
 ## Build
 
-No build instructions are necessary.
+To build the project the python package build is required
 
-## Testing
+    python3 -m pip install --upgrade build
 
-Static analysis with `mypy src/rnn_tester.py` and
-unit testing with `python3 src/rnn_tester_test.py`
+To build a package use
+
+    python3 -m build
+
+## Install
+
+The tool requires the programm
+[dieharder](https://webhome.phy.duke.edu/~rgb/General/dieharder.php) 
+for statistical analysis of the results. Install the tool first.
+
+- Debian/Ubuntu:
+
+    `sudo apt-get install dieharder`
+    
+- Fedora:
+
+    `sudo dnf install dieharder`
+    
+
+Install the tool with 
+
+    pip install ./dist/rnn_tester-<version>-py3-none-any.whl
 
 ## Usage
 
-Use `python3 rnn_tester.py [options] -d <path to dir> -f <PRNG name>`
-to test random numbers. In the directory `<path-to-dir>` all results from
-the program `weakrandom.py` are stored. With `<PRNG name>` one of the
-data sets could be chosen.
+The tool `rnn_tester` requires a binary file containing the result of an PRNG in `<path-to-rng-file>`.
+Use 
 
-Weakrandom
-=========
+    python3 rnn_tester [options] -i <path-to-rng-file>
+    
+to test your random numbers.
 
-Look at [/src/weakrandom/](src/weakrandom/README.md).
+## Testing
+
+The folder [test](./tests) contains all unit test.
+All tests including statistical code analysis could be execute with 
+    
+    tox -r
+
