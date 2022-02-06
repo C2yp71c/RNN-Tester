@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import random
-from pathlib import Path
 
 import numpy as np
 
@@ -48,9 +48,11 @@ class TestClass:
         w = wg.WindowGenerator(24, 1, 0, 10, zero_file)
         assert all(w._data == [[0], [0], [0], [0], [0], [0], [0], [1]] * rep)
 
-    def test_window_gen_real(self):
-        values = Path("./data/weakrandom/data/urand.bin")
-        w = wg.WindowGenerator(24, 1, 0, 10, values)
+    def test_window_gen_real(self, tmp_path):
+        sys_rand_file = tmp_path / "sys_rand.bin"
+        with open(sys_rand_file, 'wb') as file:
+            file.write(os.urandom(50000000))
+        w = wg.WindowGenerator(24, 1, 0, 10, sys_rand_file)
         assert w is not None
 
     def test_window_gen_me_zero(self, tmp_path):
