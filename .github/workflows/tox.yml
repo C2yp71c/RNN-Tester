@@ -1,4 +1,4 @@
-name: Python package
+name: Tox runner
 
 on:
   - push
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: fedora-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9']
@@ -19,6 +19,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+	sudo dnf install -y dieharder
         python -m pip install --upgrade pip
         python -m pip install tox tox-gh-actions
     - name: Test with tox
